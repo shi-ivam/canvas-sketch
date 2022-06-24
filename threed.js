@@ -1,7 +1,8 @@
 // color palletes
 import palletes from 'nice-color-palettes';
 import random from 'canvas-sketch-util/random'
-
+import eases from 'eases';
+import bezier from 'bezier-easing';
 
 // Ensure ThreeJS is in global scope for the 'examples/'
 global.THREE = require("three");
@@ -15,7 +16,9 @@ const canvasSketch = require("canvas-sketch");
 const settings = {
   // Make the loop animated
   animate: true,
-  dimensions: [1024, 1280],
+  dimensions: [1024, 1024],
+  fps: 30,
+  duration: 4,
   // Get a WebGL canvas rather than 2D
   context: "webgl"
 };
@@ -62,6 +65,7 @@ const sketch = ({ context }) => {
       random.range(-1, 1),
       random.range(-1, 1),
     )
+    mesh.position.multiplyScalar(0.8)
     mesh.scale.set(
       random.range(-0.5, 1),
       random.range(-0.5, 1),
@@ -73,8 +77,8 @@ const sketch = ({ context }) => {
 
   scene.add(new THREE.AmbientLight("#fff", 0.1));
   // setup light
-  const light = new THREE.DirectionalLight("white", 1);
-  light.position.set(0,0, 4);
+  let light = new THREE.DirectionalLight("white", 1);
+  light.position.set(0, 0, 4);
   scene.add(light);
 
   // draw each frame
@@ -98,8 +102,13 @@ const sketch = ({ context }) => {
       camera.updateProjectionMatrix();
     },
     // Update & render your scene here
-    render({ time }) {
-      scene.rotation.z = time;
+    render({ playhead }) {
+      // omega 
+      // const omega = Math.PI * 2 / settings.duration;
+      const t = Math.sin(playhead*Math.PI)
+      scene.rotation.z = eases.cubicInOut(t);
+
+
       renderer.render(scene, camera);
     },
     // Dispose of events & renderer for cleaner hot-reloading
